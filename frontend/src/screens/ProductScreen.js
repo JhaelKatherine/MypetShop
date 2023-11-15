@@ -1,24 +1,37 @@
-import axios from 'axios';
-import { useContext, useEffect, useReducer, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Card from 'react-bootstrap/Card';
-import ListGroup from 'react-bootstrap/ListGroup';
-import Form from 'react-bootstrap/Form';
-import Badge from 'react-bootstrap/Badge';
-import Button from 'react-bootstrap/Button';
-import Rating from '../components/Rating';
-import { Helmet } from 'react-helmet-async';
-import LoadingBox from '../components/LoadingBox';
-import MessageBox from '../components/MessageBox';
-import { getError } from '../utils';
-import { Store } from '../Store';
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import { toast } from 'react-toastify';
+// Importación de módulos y componentes necesarios
+import axios from 'axios'; // Importa axios para hacer solicitudes HTTP
+import {
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'; // Importa hooks y contextos de React
+import {
+  Link,
+  useNavigate,
+  useParams,
+} from 'react-router-dom'; // Importa utilidades de React Router
+import Row from 'react-bootstrap/Row'; // Importa el componente Row de Bootstrap de React
+import Col from 'react-bootstrap/Col'; // Importa el componente Col de Bootstrap de React
+import Card from 'react-bootstrap/Card'; // Importa el componente Card de Bootstrap de React
+import ListGroup from 'react-bootstrap/ListGroup'; // Importa el componente ListGroup de Bootstrap de React
+import Form from 'react-bootstrap/Form'; // Importa el componente Form de Bootstrap de React
+import Badge from 'react-bootstrap/Badge'; // Importa el componente Badge de Bootstrap de React
+import Button from 'react-bootstrap/Button'; // Importa el componente Button de Bootstrap de React
+import Rating from '../components/Rating'; // Importa un componente personalizado Rating
+import { Helmet } from 'react-helmet-async'; // Importa Helmet para manejar metadatos de la página
+import LoadingBox from '../components/LoadingBox'; // Importa el componente LoadingBox
+import MessageBox from '../components/MessageBox'; // Importa el componente MessageBox
+import { getError } from '../utils'; // Importa una función utilitaria para obtener errores
+import { Store } from '../Store'; // Importa el contexto Store
+import FloatingLabel from 'react-bootstrap/FloatingLabel'; // Importa el componente FloatingLabel de Bootstrap de React
+import { toast } from 'react-toastify'; // Importa la librería para notificaciones de toast
 
+// Reductor para manejar los cambios de estado
 const reducer = (state, action) => {
   switch (action.type) {
+    // Manejo de diferentes tipos de acciones y actualización del estado correspondiente
     case 'REFRESH_PRODUCT':
       return { ...state, product: action.payload };
     case 'CREATE_REQUEST':
@@ -38,23 +51,28 @@ const reducer = (state, action) => {
   }
 };
 
+// Componente ProductScreen
 function ProductScreen() {
+  // Hooks para manejar estados y referencias
   let reviewsRef = useRef();
-
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [selectedImage, setSelectedImage] = useState('');
 
+  // Hooks para navegación y parámetros de la URL
   const navigate = useNavigate();
   const params = useParams();
   const { slug } = params;
 
+  // Uso de useReducer para manejar el estado y las acciones
   const [{ loading, error, product, loadingCreateReview }, dispatch] =
     useReducer(reducer, {
       product: [],
       loading: true,
       error: '',
     });
+
+  // Efecto para obtener los detalles del producto al cargar la página
   useEffect(() => {
     const fetchData = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
@@ -68,9 +86,14 @@ function ProductScreen() {
     fetchData();
   }, [slug]);
 
+  // Obtención de datos del contexto
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const { cart, userInfo } = state;
+
+  // Manejador para agregar un producto al carrito
   const addToCartHandler = async () => {
+    // Lógica para agregar un producto al carrito y actualizar el estado global
+    // ...
     const existItem = cart.cartItems.find((x) => x._id === product._id);
     const quantity = existItem ? existItem.quantity + 1 : 1;
     const { data } = await axios.get(`/api/products/${product._id}`);
@@ -85,6 +108,7 @@ function ProductScreen() {
     navigate('/cart');
   };
 
+  // Manejador para enviar un comentario y calificación
   const submitHandler = async (e) => {
     e.preventDefault();
     if (!comment || !rating) {
@@ -117,13 +141,19 @@ function ProductScreen() {
       dispatch({ type: 'CREATE_FAIL' });
     }
   };
+
+  // Renderizado condicional según el estado de carga y los datos del producto
   return loading ? (
+    // Muestra un componente de carga mientras se cargan los datos
     <LoadingBox />
   ) : error ? (
+    // Muestra un mensaje de error si la carga falla
     <MessageBox variant="danger">{error}</MessageBox>
   ) : (
+    // Muestra los detalles del producto, reseñas y formulario para dejar una reseña
     <div>
       <Row>
+        {/* ... (Detalles del producto) */}
         <Col md={6}>
           <img
             className="img-large"
@@ -209,6 +239,9 @@ function ProductScreen() {
       </Row>
       <div className="my-3">
         <h2 ref={reviewsRef}>Reviews</h2>
+        {/* ... (Listado de reseñas) */}
+        <div className="my-3">
+        <h2 ref={reviewsRef}>Reviews</h2>
         <div className="mb-3">
           {product.reviews.length === 0 && (
             <MessageBox>There is no review</MessageBox>
@@ -273,8 +306,10 @@ function ProductScreen() {
             </MessageBox>
           )}
         </div>
+        </div>
       </div>
     </div>
   );
 }
-export default ProductScreen;
+
+export default ProductScreen; // Exporta el

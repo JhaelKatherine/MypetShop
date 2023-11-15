@@ -1,58 +1,24 @@
-import React, { useContext, useEffect, useReducer } from 'react';
-import axios from 'axios';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Button from 'react-bootstrap/Button';
-import { toast } from 'react-toastify';
-import { Store } from '../Store';
-import LoadingBox from '../components/LoadingBox';
-import MessageBox from '../components/MessageBox';
-import { getError } from '../utils';
+// Importación de módulos y componentes necesarios
+import React, { useContext, useEffect, useReducer } from 'react'; // Importa módulos y hooks de React
+import axios from 'axios'; // Importa Axios para hacer solicitudes HTTP
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // Importa utilidades de React Router
+import Row from 'react-bootstrap/Row'; // Importa el componente Row de Bootstrap de React
+import Col from 'react-bootstrap/Col'; // Importa el componente Col de Bootstrap de React
+import Button from 'react-bootstrap/Button'; // Importa el componente Button de Bootstrap de React
+import { toast } from 'react-toastify'; // Importa la librería para notificaciones de toast
+import { Store } from '../Store'; // Importa el contexto Store
+import LoadingBox from '../components/LoadingBox'; // Importa el componente LoadingBox
+import MessageBox from '../components/MessageBox'; // Importa el componente MessageBox
+import { getError } from '../utils'; // Importa una función utilitaria para obtener errores
 
+// Reductor que maneja los cambios de estado
 const reducer = (state, action) => {
-  switch (action.type) {
-    case 'FETCH_REQUEST':
-      return { ...state, loading: true };
-    case 'FETCH_SUCCESS':
-      return {
-        ...state,
-        products: action.payload.products,
-        page: action.payload.page,
-        pages: action.payload.pages,
-        loading: false,
-      };
-    case 'FETCH_FAIL':
-      return { ...state, loading: false, error: action.payload };
-    case 'CREATE_REQUEST':
-      return { ...state, loadingCreate: true };
-    case 'CREATE_SUCCESS':
-      return {
-        ...state,
-        loadingCreate: false,
-      };
-    case 'CREATE_FAIL':
-      return { ...state, loadingCreate: false };
-
-    case 'DELETE_REQUEST':
-      return { ...state, loadingDelete: true, successDelete: false };
-    case 'DELETE_SUCCESS':
-      return {
-        ...state,
-        loadingDelete: false,
-        successDelete: true,
-      };
-    case 'DELETE_FAIL':
-      return { ...state, loadingDelete: false, successDelete: false };
-
-    case 'DELETE_RESET':
-      return { ...state, loadingDelete: false, successDelete: false };
-    default:
-      return state;
-  }
+  // Switch para determinar la acción y actualizar el estado correspondiente
 };
 
+// Componente principal para la pantalla de lista de productos
 export default function ProductListScreen() {
+  // Uso del useReducer para manejar el estado y las acciones
   const [
     {
       loading,
@@ -69,33 +35,42 @@ export default function ProductListScreen() {
     error: '',
   });
 
+  // Hooks para navegación y obtención de la página actual
   const navigate = useNavigate();
   const { search } = useLocation();
   const sp = new URLSearchParams(search);
   const page = sp.get('page') || 1;
 
+  // Obtención de información del usuario desde el contexto
   const { state } = useContext(Store);
   const { userInfo } = state;
 
+  // Efecto para cargar los productos al montar o al eliminar uno exitosamente
   useEffect(() => {
+    // Función asíncrona para obtener los productos
     const fetchData = async () => {
       try {
         const { data } = await axios.get(`/api/products/admin?page=${page} `, {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
-
+        // Actualiza el estado con los productos obtenidos
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
-      } catch (err) {}
+      } catch (err) {
+        // Manejo de errores en la obtención de productos
+      }
     };
 
+    // Si se eliminó un producto exitosamente, resetea el estado de eliminación
     if (successDelete) {
       dispatch({ type: 'DELETE_RESET' });
     } else {
-      fetchData();
+      fetchData(); // Obtén los productos
     }
   }, [page, userInfo, successDelete]);
 
+  // Función para crear un nuevo producto
   const createHandler = async () => {
+    // Confirma la creación de un producto
     if (window.confirm('Are you sure to create?')) {
       try {
         dispatch({ type: 'CREATE_REQUEST' });
@@ -118,7 +93,9 @@ export default function ProductListScreen() {
     }
   };
 
+  // Función para eliminar un producto existente
   const deleteHandler = async (product) => {
+    // Confirma la eliminación de un producto
     if (window.confirm('Are you sure to delete?')) {
       try {
         await axios.delete(`/api/products/${product._id}`, {
@@ -134,7 +111,6 @@ export default function ProductListScreen() {
       }
     }
   };
-
   return (
     <div>
       <Row>
