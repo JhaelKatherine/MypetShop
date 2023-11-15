@@ -7,7 +7,6 @@ import { isAuth, isAdmin, generateToken, baseUrl, mailgun } from '../utils.js';
 
 const userRouter = express.Router();
 
-// Obtener todos los usuarios (solo accesible para usuarios autenticados y administradores)
 userRouter.get(
   '/',
   isAuth,
@@ -18,7 +17,6 @@ userRouter.get(
   })
 );
 
-// Obtener un usuario por ID (solo accesible para usuarios autenticados y administradores)
 userRouter.get(
   '/:id',
   isAuth,
@@ -33,7 +31,6 @@ userRouter.get(
   })
 );
 
-// Actualizar el perfil de usuario (solo accesible para usuarios autenticados)
 userRouter.put(
   '/profile',
   isAuth,
@@ -60,33 +57,38 @@ userRouter.put(
   })
 );
 
-// Enviar correo electrónico con enlace para restablecer la contraseña
 userRouter.post(
   '/forget-password',
   expressAsyncHandler(async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
 
     if (user) {
-      // Generar token JWT con un límite de tiempo para restablecimiento de contraseña
       const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
         expiresIn: '3h',
       });
       user.resetToken = token;
       await user.save();
 
-      // Enviar correo electrónico con enlace para restablecer la contraseña
-      mailgun().messages().send({
-        from: 'Amazona <me@mg.yourdomain.com>',
-        to: `${user.name} <${user.email}>`,
-        subject: `Reset Password`,
-        html: `
-          <p>Please Click the following link to reset your password:</p> 
-          <a href="${baseUrl()}/reset-password/${token}"}>Reset Password</a>
-          `,
-      }, (error, body) => {
-        console.log(error);
-        console.log(body);
-      });
+      //reset link
+      console.log(`${baseUrl()}/reset-password/${token}`);
+
+      mailgun()
+        .messages()
+        .send(
+          {
+            from: 'Amazona <me@mg.yourdomain.com>',
+            to: `${user.name} <${user.email}>`,
+            subject: `Reset Password`,
+            html: ` 
+             <p>Please Click the following link to reset your password:</p> 
+             <a href="${baseUrl()}/reset-password/${token}"}>Reset Password</a>
+             `,
+          },
+          (error, body) => {
+            console.log(error);
+            console.log(body);
+          }
+        );
       res.send({ message: 'We sent reset password link to your email.' });
     } else {
       res.status(404).send({ message: 'User not found' });
@@ -94,7 +96,6 @@ userRouter.post(
   })
 );
 
-// Restablecer la contraseña utilizando un token válido
 userRouter.post(
   '/reset-password',
   expressAsyncHandler(async (req, res) => {
@@ -118,8 +119,6 @@ userRouter.post(
     });
   })
 );
-// Actualizar un usuario por ID (solo accesible para usuarios autenticados y administradores)
-
 
 userRouter.put(
   '/:id',
@@ -138,7 +137,6 @@ userRouter.put(
     }
   })
 );
-// Eliminar un usuario por ID (solo accesible para usuarios autenticados y administradores)
 
 userRouter.delete(
   '/:id',
@@ -158,9 +156,6 @@ userRouter.delete(
     }
   })
 );
-
-// Iniciar sesión de usuario
-
 userRouter.post(
   '/signin',
   expressAsyncHandler(async (req, res) => {
@@ -180,8 +175,6 @@ userRouter.post(
     res.status(401).send({ message: 'Invalid email or password' });
   })
 );
-
-// Registrarse como nuevo usuario
 
 userRouter.post(
   '/signup',
