@@ -12,109 +12,107 @@ export default function ShippingAddressScreen() {
   const {
     fullBox,
     userInfo,
-    cart: { shippingAddress },
+    cart: { shippingAddress, paymentMethod },
   } = state;
+
   const [fullName, setFullName] = useState(shippingAddress.fullName || '');
   const [address, setAddress] = useState(shippingAddress.address || '');
   const [city, setCity] = useState(shippingAddress.city || '');
-  const [postalCode, setPostalCode] = useState(
-    shippingAddress.postalCode || ''
-  );
+  const [postalCode, setPostalCode] = useState(shippingAddress.postalCode || '');
+  const [country, setCountry] = useState(shippingAddress.country || '');
+
+  const [paymentMethodName, setPaymentMethod] = useState(paymentMethod || 'PayPal');
+
   useEffect(() => {
     if (!userInfo) {
       navigate('/signin?redirect=/shipping');
     }
   }, [userInfo, navigate]);
-  const [country, setCountry] = useState(shippingAddress.country || '');
-  const submitHandler = (e) => {
+
+  const submitShippingHandler = (e) => {
     e.preventDefault();
     ctxDispatch({
       type: 'SAVE_SHIPPING_ADDRESS',
-      payload: {
-        fullName,
-        address,
-        city,
-        postalCode,
-        country,
-        location: shippingAddress.location,
-      },
+      payload: { fullName, address, city, postalCode, country, location: shippingAddress.location },
     });
-    localStorage.setItem(
-      'shippingAddress',
-      JSON.stringify({
-        fullName,
-        address,
-        city,
-        postalCode,
-        country,
-        location: shippingAddress.location,
-      })
-    );
+    localStorage.setItem('shippingAddress', JSON.stringify({ fullName, address, city, postalCode, country, location: shippingAddress.location }));
     navigate('/payment');
+  };
+
+  const submitPaymentHandler = (e) => {
+    e.preventDefault();
+    ctxDispatch({ type: 'SAVE_PAYMENT_METHOD', payload: paymentMethodName });
+    localStorage.setItem('paymentMethod', paymentMethodName);
+    navigate('/placeorder');
   };
 
   useEffect(() => {
     ctxDispatch({ type: 'SET_FULLBOX_OFF' });
   }, [ctxDispatch, fullBox]);
 
+  useEffect(() => {
+    if (!shippingAddress.address) {
+      navigate('/shipping');
+    }
+  }, [shippingAddress, navigate]);
+
   return (
-    <div>
+    <div className="container">
       <Helmet>
-        <title>Shipping Address</title>
+        <title>Shipping and Payment</title>
       </Helmet>
 
       <CheckoutSteps step1 step2></CheckoutSteps>
-      <div className="container small-container">
-        <h1 className="my-3">Biling Details</h1>
-        <Form onSubmit={submitHandler}>
-          <Form.Group className="mb-3" controlId="fullName">
-            <Form.Label>Full Name(*)</Form.Label>
-            <Form.Control
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="address">
-            <Form.Label>Nit(optional)</Form.Label>
-            <Form.Control
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              required
-            />
-            </Form.Group>
-
-          <Form.Group className="mb-3" controlId="address">
-            <Form.Label>Address</Form.Label>
-            <Form.Control
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="city">
-            <Form.Label>City</Form.Label>
-            <Form.Control
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              required
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="postalCode">
-            <Form.Label>Cell Phone</Form.Label>
-            <Form.Control
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
-              required
-            />
-          </Form.Group>
-          
-          <div className="mb-3">
-            <Button variant="primary" type="submit">
-              Place the Order
-            </Button>
+      <div className="row">
+        {/* Left side for ShippingAddressScreen */}
+        <div className="col-md-6">
+          <div className="small-container">
+            <h1 className="my-3">Billing Details</h1>
+            <Form onSubmit={submitShippingHandler}>
+              <Form.Group className="mb-3" controlId="fullName">
+                <Form.Label>Full Name(*)</Form.Label>
+                <Form.Control value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+              </Form.Group>
+              {/* Other form fields for shipping address */}
+              <div className="mb-3">
+                <Button variant="primary" type="submit">Continue to Payment</Button>
+              </div>
+            </Form>
           </div>
-        </Form>
+        </div>
+        
+        {/* Right side for PaymentMethodScreen */}
+        <div className="col-md-6">
+          <div className="small-container">
+            <h1 className="my-3">Payment Method</h1>
+            <Form onSubmit={submitPaymentHandler}>
+              {/* Payment method radio buttons */}
+              <div className="mb-3">
+                <Form.Check
+                  type="radio"
+                  id="PayPal"
+                  label="PayPal"
+                  value="PayPal"
+                  checked={paymentMethodName === 'PayPal'}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <Form.Check
+                  type="radio"
+                  id="Stripe"
+                  label="Stripe"
+                  value="Stripe"
+                  checked={paymentMethodName === 'Stripe'}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <Button type="submit">Continue</Button>
+              </div>
+            </Form>
+          </div>
+        </div>
       </div>
     </div>
   );
