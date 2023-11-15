@@ -73,7 +73,41 @@ export default function ShippingAddressScreen() {
                 <Form.Label>Full Name(*)</Form.Label>
                 <Form.Control value={fullName} onChange={(e) => setFullName(e.target.value)} required />
               </Form.Group>
-              {/* Other form fields for shipping address */}
+         <Form.Group className="mb-3" controlId="address">
+           <Form.Label>Nit(optional)</Form.Label>
+           <Form.Control
+             value={address}
+             onChange={(e) => setAddress(e.target.value)}
+             required
+           />
+           </Form.Group>
+
+
+         <Form.Group className="mb-3" controlId="address">
+           <Form.Label>Address</Form.Label>
+           <Form.Control
+             value={address}
+             onChange={(e) => setAddress(e.target.value)}
+             required
+           />
+         </Form.Group>
+         <Form.Group className="mb-3" controlId="city">
+           <Form.Label>City</Form.Label>
+           <Form.Control
+             value={city}
+             onChange={(e) => setCity(e.target.value)}
+             required
+           />
+         </Form.Group>
+         <Form.Group className="mb-3" controlId="postalCode">
+           <Form.Label>Cell Phone</Form.Label>
+           <Form.Control
+             value={postalCode}
+             onChange={(e) => setPostalCode(e.target.value)}
+             required
+           />
+         </Form.Group>
+
               <div className="mb-3">
                 <Button variant="primary" type="submit">Continue to Payment</Button>
               </div>
