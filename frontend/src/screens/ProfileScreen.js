@@ -1,12 +1,13 @@
 import React, { useContext, useReducer, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import { Store } from '../Store';
-import { toast } from 'react-toastify';
-import { getError } from '../utils';
-import axios from 'axios';
+import { Helmet } from 'react-helmet-async'; // Importa Helmet para manejar metadatos de la página
+import Form from 'react-bootstrap/Form'; // Importa el componente Form de Bootstrap de React
+import Button from 'react-bootstrap/Button'; // Importa el componente Button de Bootstrap de React
+import { Store } from '../Store'; // Importa el contexto Store
+import { toast } from 'react-toastify'; // Importa la librería para notificaciones de toast
+import { getError } from '../utils'; // Importa una función utilitaria para obtener errores
+import axios from 'axios'; // Importa axios para hacer solicitudes HTTP
 
+// Reductor para manejar los cambios de estado
 const reducer = (state, action) => {
   switch (action.type) {
     case 'UPDATE_REQUEST':
@@ -21,21 +22,26 @@ const reducer = (state, action) => {
   }
 };
 
+// Componente ProfileScreen
 export default function ProfileScreen() {
+  // Obtiene el estado global y la función de despacho del contexto Store
   const { state, dispatch: ctxDispatch } = useContext(Store);
-  const { userInfo } = state;
-  const [name, setName] = useState(userInfo.name);
-  const [email, setEmail] = useState(userInfo.email);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const { userInfo } = state; // Obtiene la información del usuario del estado global
+  const [name, setName] = useState(userInfo.name); // Estado local para el nombre
+  const [email, setEmail] = useState(userInfo.email); // Estado local para el email
+  const [password, setPassword] = useState(''); // Estado local para la contraseña
+  const [confirmPassword, setConfirmPassword] = useState(''); // Estado local para confirmar contraseña
 
+  // UseReducer para manejar el estado y las acciones relacionadas con la actualización del usuario
   const [{ loadingUpdate }, dispatch] = useReducer(reducer, {
     loadingUpdate: false,
   });
 
+  // Función para enviar los datos actualizados del usuario
   const submitHandler = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Evita el comportamiento por defecto del formulario
     try {
+      // Realiza una solicitud PUT para actualizar el perfil del usuario
       const { data } = await axios.put(
         '/api/users/profile',
         {
@@ -47,13 +53,22 @@ export default function ProfileScreen() {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         }
       );
+
+      // Dispara una acción de actualización exitosa en el reducer
       dispatch({
         type: 'UPDATE_SUCCESS',
       });
+
+      // Actualiza la información del usuario en el estado global
       ctxDispatch({ type: 'USER_SIGNIN', payload: data });
+
+      // Almacena la información del usuario actualizada en el almacenamiento local
       localStorage.setItem('userInfo', JSON.stringify(data));
+
+      // Muestra una notificación de éxito
       toast.success('User updated successfully');
     } catch (err) {
+      // En caso de error, muestra una notificación de error
       dispatch({
         type: 'FETCH_FAIL',
       });
@@ -61,6 +76,7 @@ export default function ProfileScreen() {
     }
   };
 
+  // Renderiza el formulario para actualizar el perfil del usuario
   return (
     <div className="container small-container">
       <Helmet>
@@ -68,6 +84,7 @@ export default function ProfileScreen() {
       </Helmet>
       <h1 className="my-3">User Profile</h1>
       <form onSubmit={submitHandler}>
+        {/* Campos para el nombre, email, contraseña y confirmación de contraseña */}
         <Form.Group className="mb-3" controlId="name">
           <Form.Label>Name</Form.Label>
           <Form.Control
