@@ -1,59 +1,57 @@
-import { useContext } from 'react'; // Importa el hook useContext de React
-import { Store } from '../Store'; // Importa el contexto Store
-import { Helmet } from 'react-helmet-async'; // Importa Helmet para manejar el título de la página
-import Row from 'react-bootstrap/Row'; // Importa Row de React Bootstrap
-import Col from 'react-bootstrap/Col'; // Importa Col de React Bootstrap
-import MessageBox from '../components/MessageBox'; // Importa el componente MessageBox
-import ListGroup from 'react-bootstrap/ListGroup'; // Importa ListGroup de React Bootstrap
-import Button from 'react-bootstrap/Button'; // Importa Button de React Bootstrap
-import Card from 'react-bootstrap/Card'; // Importa Card de React Bootstrap
-import { Link, useNavigate } from 'react-router-dom'; // Importa Link y useNavigate de React Router
-import axios from 'axios'; // Importa axios para realizar solicitudes HTTP
+import { useContext } from 'react';
+import { Store } from '../Store';
+import { Helmet } from 'react-helmet-async';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import MessageBox from '../components/MessageBox';
+import ListGroup from 'react-bootstrap/ListGroup';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-export default function CartScreen() { // Define un componente funcional llamado CartScreen
-  const navigate = useNavigate(); // Obtiene la función de navegación de React Router
-  const { state, dispatch: ctxDispatch } = useContext(Store); // Obtiene el estado global del contexto Store
+export default function CartScreen() {
+  const navigate = useNavigate();
+  const { state, dispatch: ctxDispatch } = useContext(Store);
   const {
-    cart: { cartItems }, // Extrae cartItems del estado
+    cart: { cartItems },
   } = state;
 
-  const updateCartHandler = async (item, quantity) => { // Actualiza la cantidad de un elemento en el carrito
+  const updateCartHandler = async (item, quantity) => {
     const { data } = await axios.get(`/api/products/${item._id}`);
-    if (data.countInStock < quantity) { // Verifica si hay suficiente stock
+    if (data.countInStock < quantity) {
       window.alert('Sorry. Product is out of stock');
       return;
     }
-    ctxDispatch({ // Actualiza el estado global del carrito
+    ctxDispatch({
       type: 'CART_ADD_ITEM',
       payload: { ...item, quantity },
     });
   };
-
-  const removeItemHandler = (item) => { // Elimina un elemento del carrito
+  const removeItemHandler = (item) => {
     ctxDispatch({ type: 'CART_REMOVE_ITEM', payload: item });
   };
 
-  const checkoutHandler = () => { // Maneja la redirección a la pantalla de inicio de sesión para realizar el checkout
+  const checkoutHandler = () => {
     navigate('/signin?redirect=/shipping');
   };
 
   return (
     <div>
       <Helmet>
-        <title>Shopping Cart</title> {/* Cambia el título de la página */}
+        <title>Shopping Cart</title>
       </Helmet>
-      <h1>Shopping Cart</h1> {/* Título principal */}
+      <h1>Shopping Cart</h1>
       <Row>
         <Col md={8}>
-          {cartItems.length === 0 ? ( // Verifica si el carrito está vacío
+          {cartItems.length === 0 ? (
             <MessageBox>
               Cart is empty. <Link to="/">Go Shopping</Link>
             </MessageBox>
           ) : (
-            <ListGroup> {/* Lista los elementos del carrito */}
+            <ListGroup>
               {cartItems.map((item) => (
-                <ListGroup.Item key={item._id}> {/* Elemento del carrito */}
-                  {/* Muestra la imagen, el nombre y los botones de control de cantidad */}
+                <ListGroup.Item key={item._id}>
                   <Row className="align-items-center">
                     <Col md={4}>
                       <img
@@ -104,7 +102,6 @@ export default function CartScreen() { // Define un componente funcional llamado
             <Card.Body>
               <ListGroup variant="flush">
                 <ListGroup.Item>
-                  {/* Muestra el subtotal y el botón para proceder al checkout */}
                   <h3>
                     Subtotal ({cartItems.reduce((a, c) => a + c.quantity, 0)}{' '}
                     items) : $

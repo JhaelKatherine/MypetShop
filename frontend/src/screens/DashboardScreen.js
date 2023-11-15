@@ -9,7 +9,6 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 
-// Reducer para manejar el estado del componente
 const reducer = (state, action) => {
   switch (action.type) {
     case 'FETCH_REQUEST':
@@ -26,58 +25,41 @@ const reducer = (state, action) => {
       return state;
   }
 };
-
-// Componente DashboardScreen
 export default function DashboardScreen() {
-  // Usa useReducer para manejar el estado del componente
   const [{ loading, summary, error }, dispatch] = useReducer(reducer, {
     loading: true,
     error: '',
   });
-
-  // Obtiene información del estado global del contexto
   const { state } = useContext(Store);
   const { userInfo } = state;
 
-  // Función para realizar la solicitud de resumen de órdenes
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Realiza una solicitud HTTP para obtener el resumen de órdenes
         const { data } = await axios.get('/api/orders/summary', {
           headers: { Authorization: `Bearer ${userInfo.token}` },
         });
-        // Actualiza el estado con los datos recibidos
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (err) {
-        // En caso de error, actualiza el estado con el mensaje de error
         dispatch({
           type: 'FETCH_FAIL',
           payload: getError(err),
         });
       }
     };
-    // Llama a la función fetchData al cargar el componente o cuando cambia userInfo
     fetchData();
   }, [userInfo]);
 
-  // Renderiza el contenido del componente
   return (
     <div>
-      {/* Encabezado */}
       <h1>Dashboard</h1>
-
-      {/* Condición para mostrar elementos de carga, error o datos */}
       {loading ? (
-        <LoadingBox /> // Muestra un componente de carga si está cargando
+        <LoadingBox />
       ) : error ? (
-        <MessageBox variant="danger">{error}</MessageBox> // Muestra un mensaje de error si hay un error
+        <MessageBox variant="danger">{error}</MessageBox>
       ) : (
-        // Muestra el resumen si no hay error y no está cargando
         <>
-          {/* Sección de resumen */}
           <Row>
-            {/* Estadísticas de usuarios */}
             <Col md={4}>
               <Card>
                 <Card.Body>
@@ -90,7 +72,6 @@ export default function DashboardScreen() {
                 </Card.Body>
               </Card>
             </Col>
-            {/* Estadísticas de órdenes */}
             <Col md={4}>
               <Card>
                 <Card.Body>
@@ -103,7 +84,6 @@ export default function DashboardScreen() {
                 </Card.Body>
               </Card>
             </Col>
-            {/* Estadísticas de ventas */}
             <Col md={4}>
               <Card>
                 <Card.Body>
@@ -118,8 +98,6 @@ export default function DashboardScreen() {
               </Card>
             </Col>
           </Row>
-
-          {/* Gráfico de ventas diarias */}
           <div className="my-3">
             <h2>Sales</h2>
             {summary.dailyOrders.length === 0 ? (
@@ -137,8 +115,6 @@ export default function DashboardScreen() {
               ></Chart>
             )}
           </div>
-
-          {/* Gráfico de categorías */}
           <div className="my-3">
             <h2>Categories</h2>
             {summary.productCategories.length === 0 ? (

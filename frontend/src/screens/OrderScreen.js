@@ -1,24 +1,21 @@
-// Importación de módulos y componentes necesarios
-import axios from 'axios'; // Módulo para realizar solicitudes HTTP
-import React, { useContext, useEffect, useReducer } from 'react'; // Importación de módulos de React
-import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'; // Componentes de PayPal
-import { Helmet } from 'react-helmet-async'; // Para manejar el encabezado del documento de forma asíncrona
-import { useNavigate, useParams } from 'react-router-dom'; // Gestionar navegación y parámetros de URL
-import Row from 'react-bootstrap/Row'; // Componentes de Bootstrap para el diseño de filas
-import Col from 'react-bootstrap/Col'; // Componentes de Bootstrap para el diseño de columnas
-import Button from 'react-bootstrap/Button'; // Componente de botón de Bootstrap
-import ListGroup from 'react-bootstrap/ListGroup'; // Componente de lista de Bootstrap
-import Card from 'react-bootstrap/Card'; // Componente de tarjeta de Bootstrap
-import { Link } from 'react-router-dom'; // Componente de enlace para enrutamiento
-import LoadingBox from '../components/LoadingBox'; // Componente de caja de carga
-import MessageBox from '../components/MessageBox'; // Componente de caja de mensaje
-import { Store } from '../Store'; // Contexto global de la aplicación
-import { getError } from '../utils'; // Función utilitaria para obtener mensajes de error
-import { toast } from 'react-toastify'; // Librería para mostrar notificaciones estilo toast
+import axios from 'axios';
+import React, { useContext, useEffect, useReducer } from 'react';
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+import { Helmet } from 'react-helmet-async';
+import { useNavigate, useParams } from 'react-router-dom';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
+import ListGroup from 'react-bootstrap/ListGroup';
+import Card from 'react-bootstrap/Card';
+import { Link } from 'react-router-dom';
+import LoadingBox from '../components/LoadingBox';
+import MessageBox from '../components/MessageBox';
+import { Store } from '../Store';
+import { getError } from '../utils';
+import { toast } from 'react-toastify';
 
-// Función reductora para gestionar el estado del componente
 function reducer(state, action) {
-  // Lógica para gestionar diferentes acciones y actualizar el estado
   switch (action.type) {
     case 'FETCH_REQUEST':
       return { ...state, loading: true, error: '' };
@@ -51,19 +48,14 @@ function reducer(state, action) {
       return state;
   }
 }
-
-// Componente principal de la pantalla de la orden
 export default function OrderScreen() {
-  // Obtención del estado global de la aplicación a través del contexto
   const { state } = useContext(Store);
-  const { userInfo } = state; // Información del usuario actual
+  const { userInfo } = state;
 
-  // Obtención de parámetros de la URL
-  const params = useParams(); // Obtención de parámetros dinámicos de la URL
-  const { id: orderId } = params; // ID de la orden obtenido de los parámetros de la URL
-  const navigate = useNavigate(); // Función para la navegación programática
+  const params = useParams();
+  const { id: orderId } = params;
+  const navigate = useNavigate();
 
-  // Uso del reductor para gestionar el estado local del componente
   const [
     {
       loading,
@@ -83,28 +75,23 @@ export default function OrderScreen() {
     loadingPay: false,
   });
 
-  // Obtención del estado del script de PayPal
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
 
-  // Función para crear una orden de PayPal
   function createOrder(data, actions) {
-    // Lógica para crear una orden de PayPal
     return actions.order
-    .create({
-      purchase_units: [
-        {
-          amount: { value: order.totalPrice },
-        },
-      ],
-    })
-    .then((orderID) => {
-      return orderID;
-    });
+      .create({
+        purchase_units: [
+          {
+            amount: { value: order.totalPrice },
+          },
+        ],
+      })
+      .then((orderID) => {
+        return orderID;
+      });
   }
 
-  // Función que se ejecuta al aprobar el pago en PayPal
   function onApprove(data, actions) {
-    // Lógica para capturar el pago en PayPal
     return actions.order.capture().then(async function (details) {
       try {
         dispatch({ type: 'PAY_REQUEST' });
@@ -123,16 +110,11 @@ export default function OrderScreen() {
       }
     });
   }
-
-  // Función para manejar errores de PayPal
   function onError(err) {
-    // Manejo de errores de PayPal
     toast.error(getError(err));
   }
 
-  // Efecto para cargar los datos de la orden y el script de PayPal
   useEffect(() => {
-    // Función asincrónica para obtener datos de la orden y el script de PayPal
     const fetchOrder = async () => {
       try {
         dispatch({ type: 'FETCH_REQUEST' });
@@ -177,7 +159,6 @@ export default function OrderScreen() {
       };
       loadPaypalScript();
     }
-
   }, [
     order,
     userInfo,
@@ -188,9 +169,7 @@ export default function OrderScreen() {
     successDeliver,
   ]);
 
-  // Función para manejar la entrega de la orden
   async function deliverOrderHandler() {
-    // Lógica para marcar la orden como entregada
     try {
       dispatch({ type: 'DELIVER_REQUEST' });
       const { data } = await axios.put(
@@ -208,26 +187,22 @@ export default function OrderScreen() {
     }
   }
 
-  // Renderizado condicional basado en el estado de carga y errores
   return loading ? (
-    <LoadingBox></LoadingBox> // Caja de carga mientras se obtienen los datos
+    <LoadingBox></LoadingBox>
   ) : error ? (
-    <MessageBox variant="danger">{error}</MessageBox> // Mensaje de error si falla la obtención de datos
+    <MessageBox variant="danger">{error}</MessageBox>
   ) : (
     <div>
-      {/* Encabezado dinámico */}
       <Helmet>
         <title>Order {orderId}</title>
       </Helmet>
       <h1 className="my-3">Order {orderId}</h1>
       <Row>
-        {/* Sección de detalles de la orden */}
         <Col md={8}>
           <Card className="mb-3">
             <Card.Body>
               <Card.Title>Shipping</Card.Title>
               <Card.Text>
-                {/* Detalles de envío de la orden */}
                 <strong>Name:</strong> {order.shippingAddress.fullName} <br />
                 <strong>Address: </strong> {order.shippingAddress.address},
                 {order.shippingAddress.city}, {order.shippingAddress.postalCode}
@@ -243,7 +218,6 @@ export default function OrderScreen() {
                     </a>
                   )}
               </Card.Text>
-              {/* Estado de la entrega */}
               {order.isDelivered ? (
                 <MessageBox variant="success">
                   Delivered at {order.deliveredAt}
@@ -253,16 +227,12 @@ export default function OrderScreen() {
               )}
             </Card.Body>
           </Card>
-          {/* Sección de detalles de pago */}
-          
           <Card className="mb-3">
             <Card.Body>
               <Card.Title>Payment</Card.Title>
               <Card.Text>
-                {/* Detalles del método de pago */}
                 <strong>Method:</strong> {order.paymentMethod}
               </Card.Text>
-              {/* Estado del pago */}
               {order.isPaid ? (
                 <MessageBox variant="success">
                   Paid at {order.paidAt}
@@ -272,12 +242,11 @@ export default function OrderScreen() {
               )}
             </Card.Body>
           </Card>
-          {/* Sección de detalles de artículos */}
+
           <Card className="mb-3">
             <Card.Body>
               <Card.Title>Items</Card.Title>
               <ListGroup variant="flush">
-                {/* Lista de artículos comprados */}
                 {order.orderItems.map((item) => (
                   <ListGroup.Item key={item._id}>
                     <Row className="align-items-center">
@@ -300,15 +269,11 @@ export default function OrderScreen() {
             </Card.Body>
           </Card>
         </Col>
-        {/* Sección de resumen de la orden */}
         <Col md={4}>
           <Card className="mb-3">
             <Card.Body>
               <Card.Title>Order Summary</Card.Title>
               <ListGroup variant="flush">
-                {/* Resumen de la orden */}
-                {/* Botones de PayPal */}
-                {/* Botón de entrega de la orden */}
                 <ListGroup.Item>
                   <Row>
                     <Col>Items</Col>
