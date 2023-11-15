@@ -65,7 +65,7 @@ export default function ShippingAddressScreen() {
 
       <CheckoutSteps step1 step2></CheckoutSteps>
       <div className="container small-container">
-        <h1 className="my-3">Shipping Address</h1>
+        <h1 className="my-3">Biling Details</h1>
         <Form onSubmit={submitHandler}>
           <Form.Group className="mb-3" controlId="fullName">
             <Form.Label>Full Name(*)</Form.Label>
@@ -108,29 +108,10 @@ export default function ShippingAddressScreen() {
               required
             />
           </Form.Group>
-    
-          <div className="mb-3">
-            <Button
-              id="chooseOnMap"
-              type="button"
-              variant="light"
-              onClick={() => navigate('/map')}
-            >
-              Choose Location On Map
-            </Button>
-            {shippingAddress.location && shippingAddress.location.lat ? (
-              <div>
-                LAT: {shippingAddress.location.lat}
-                LNG:{shippingAddress.location.lng}
-              </div>
-            ) : (
-              <div>No location</div>
-            )}
-          </div>
-
+          
           <div className="mb-3">
             <Button variant="primary" type="submit">
-              Continue
+              Place the Order
             </Button>
           </div>
         </Form>
