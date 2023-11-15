@@ -36,11 +36,12 @@ export default function ShippingAddressScreen() {
       payload: { fullName, address, city, postalCode, country, location: shippingAddress.location },
     });
     localStorage.setItem('shippingAddress', JSON.stringify({ fullName, address, city, postalCode, country, location: shippingAddress.location }));
-    navigate('/payment');
   };
 
   const submitPaymentHandler = (e) => {
+    submitShippingHandler();
     e.preventDefault();
+    submitShippingHandler(e);
     ctxDispatch({ type: 'SAVE_PAYMENT_METHOD', payload: paymentMethodName });
     localStorage.setItem('paymentMethod', paymentMethodName);
     navigate('/placeorder');
@@ -68,7 +69,7 @@ export default function ShippingAddressScreen() {
         <div className="col-md-6">
           <div className="small-container">
             <h1 className="my-3">Billing Details</h1>
-            <Form onSubmit={submitShippingHandler}>
+            <Form onSubmit={submitPaymentHandler }>
               <Form.Group className="mb-3" controlId="fullName">
                 <Form.Label>Full Name(*)</Form.Label>
                 <Form.Control value={fullName} onChange={(e) => setFullName(e.target.value)} required />
@@ -142,7 +143,7 @@ export default function ShippingAddressScreen() {
                 />
               </div>
               <div className="mb-3">
-                <Button type="submit">Continue</Button>
+                <Button variant="primary" type="submit">Continue</Button>
               </div>
             </Form>
           </div>
