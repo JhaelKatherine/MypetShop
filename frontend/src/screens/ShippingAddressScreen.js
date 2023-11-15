@@ -39,7 +39,6 @@ export default function ShippingAddressScreen() {
   };
 
   const submitPaymentHandler = (e) => {
-    submitShippingHandler();
     e.preventDefault();
     submitShippingHandler(e);
     ctxDispatch({ type: 'SAVE_PAYMENT_METHOD', payload: paymentMethodName });
@@ -108,10 +107,6 @@ export default function ShippingAddressScreen() {
              required
            />
          </Form.Group>
-
-              <div className="mb-3">
-                <Button variant="primary" type="submit">Continue to Payment</Button>
-              </div>
             </Form>
           </div>
         </div>
@@ -143,7 +138,7 @@ export default function ShippingAddressScreen() {
                 />
               </div>
               <div className="mb-3">
-                <Button variant="primary" type="submit">Continue</Button>
+                <Button variant="primary" type="submit">Continue--</Button>
               </div>
             </Form>
           </div>
