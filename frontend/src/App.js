@@ -102,7 +102,7 @@ function App() {
                     )}
                   </Link>
                   {userInfo ? (
-                   <NavDropdown title={<><img src={profileImage} alt="Profile" /> {userInfo.name}</>} id="basic-nav-dropdown">
+                   <NavDropdown title={<><img src="https://i.ibb.co/PMQ1s9X/imagen-de-perfil.png" alt="Profile" /> {userInfo.name}</>} id="basic-nav-dropdown">
                    <LinkContainer to="/profile">
                      <NavDropdown.Item>User Profile</NavDropdown.Item>
                    </LinkContainer>
