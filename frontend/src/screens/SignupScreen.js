@@ -1,153 +1,97 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
+import Axios from 'axios';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { useContext, useEffect, useState } from 'react';
 import { Store } from '../Store';
-import CheckoutSteps from '../components/CheckoutSteps';
+import { toast } from 'react-toastify';
+import { getError } from '../utils';
+
 export default function SignupScreen() {
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const redirectInUrl = new URLSearchParams(search).get('redirect');
+  const redirect = redirectInUrl ? redirectInUrl : '/';
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   const { state, dispatch: ctxDispatch } = useContext(Store);
-  const {
-    fullBox,
-    userInfo,
-    cart: { shippingAddress, paymentMethod },
-  } = state;
-
-  const [fullName, setFullName] = useState(shippingAddress.fullName || '');
-  const [address, setAddress] = useState(shippingAddress.address || '');
-  const [city, setCity] = useState(shippingAddress.city || '');
-  const [postalCode, setPostalCode] = useState(shippingAddress.postalCode || '');
-  const [country, setCountry] = useState(shippingAddress.country || '');
-
-  const [paymentMethodName, setPaymentMethod] = useState(paymentMethod || 'PayPal');
-
-  useEffect(() => {
-    if (!userInfo) {
-      navigate('/signin?redirect=/shipping');
+  const { userInfo } = state;
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
     }
-  }, [userInfo, navigate]);
-
-  const submitShippingHandler = (e) => {
-    e.preventDefault();
-    ctxDispatch({
-      type: 'SAVE_SHIPPING_ADDRESS',
-      payload: { fullName, address, city, postalCode, country, location: shippingAddress.location },
-    });
-    localStorage.setItem('shippingAddress', JSON.stringify({ fullName, address, city, postalCode, country, location: shippingAddress.location }));
-    // Aquí se redirige al usuario a la página de pago después de guardar la dirección de envío
-    navigate('/payment');
-  };
-
-  const submitPaymentHandler = (e) => {
-    e.preventDefault();
-    ctxDispatch({ type: 'SAVE_PAYMENT_METHOD', payload: paymentMethodName });
-    localStorage.setItem('paymentMethod', paymentMethodName);
-    navigate('/placeorder');
+    try {
+      const { data } = await Axios.post('/api/users/signup', {
+        name,
+        email,
+        password,
+      });
+      ctxDispatch({ type: 'USER_SIGNIN', payload: data });
+      localStorage.setItem('userInfo', JSON.stringify(data));
+      navigate(redirect || '/');
+    } catch (err) {
+      toast.error(getError(err));
+    }
   };
 
   useEffect(() => {
-    ctxDispatch({ type: 'SET_FULLBOX_OFF' });
-  }, [ctxDispatch, fullBox]);
-
-  useEffect(() => {
-    if (!shippingAddress.address) {
-      navigate('/shipping');
+    if (userInfo) {
+      navigate(redirect);
     }
-  }, [shippingAddress, navigate]);
+  }, [navigate, redirect, userInfo]);
 
   return (
-    <div className="container">
-    <Helmet>
-      <title>Shipping and Payment</title>
-    </Helmet>
+    <Container className="small-container">
+      <Helmet>
+        <title>Sign Up</title>
+      </Helmet>
+      <h1 className="my-3">Sign Up</h1>
+      <Form onSubmit={submitHandler}>
+        <Form.Group className="mb-3" controlId="name">
+          <Form.Label>Name</Form.Label>
+          <Form.Control onChange={(e) => setName(e.target.value)} required />
+        </Form.Group>
 
-    <CheckoutSteps step1 step2></CheckoutSteps>
-    <div className="row">
-      {/* Left side for ShippingAddressScreen */}
-      <div className="col-md-6">
-        <div className="small-container">
-          <h1 className="my-3">Billing Details</h1>
-          <Form onSubmit={(e) => {
-              submitShippingHandler(e);
-              submitPaymentHandler(e);
-            }}>
-            <Form.Group className="mb-3" controlId="fullName">
-              <Form.Label>Full Name(*)</Form.Label>
-              <Form.Control value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-              </Form.Group>
-         <Form.Group className="mb-3" controlId="address">
-           <Form.Label>Nit(optional)</Form.Label>
-           <Form.Control
-             value={address}
-             onChange={(e) => setAddress(e.target.value)}
-             required
-           />
-           </Form.Group>
-
-
-         <Form.Group className="mb-3" controlId="address">
-           <Form.Label>Address</Form.Label>
-           <Form.Control
-             value={address}
-             onChange={(e) => setAddress(e.target.value)}
-             required
-           />
-         </Form.Group>
-         <Form.Group className="mb-3" controlId="city">
-           <Form.Label>City</Form.Label>
-           <Form.Control
-             value={city}
-             onChange={(e) => setCity(e.target.value)}
-             required
-           />
-         </Form.Group>
-         <Form.Group className="mb-3" controlId="postalCode">
-           <Form.Label>Cell Phone</Form.Label>
-           <Form.Control
-             value={postalCode}
-             onChange={(e) => setPostalCode(e.target.value)}
-             required
-           />
-         </Form.Group>
-
-              <div className="mb-3">
-                <Button variant="primary" type="submit">Continue njkj </Button>
-              </div>
-            </Form>
-          </div>
+        <Form.Group className="mb-3" controlId="email">
+          <Form.Label>Email</Form.Label>
+          <Form.Control
+            type="email"
+            required
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3" controlId="password">
+          <Form.Label>Password</Form.Label>
+          <Form.Control
+            type="password"
+            required
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Form.Group className="mb-3" controlId="confirmPassword">
+            <Form.Label>Confirm Password</Form.Label>
+            <Form.Control
+              type="password"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </Form.Group>
+        </Form.Group>
+        <div className="mb-3">
+          <Button type="submit">Sign Up</Button>
         </div>
-        
-        {/* Right side for PaymentMethodScreen */}
-        <div className="col-md-6">
-          <div className="small-container">
-            <h1 className="my-3">Payment Method</h1>
-            <Form onSubmit={submitPaymentHandler}>
-              {/* Payment method radio buttons */}
-              <div className="mb-3">
-                <Form.Check
-                  type="radio"
-                  id="PayPal"
-                  label="PayPal"
-                  value="PayPal"
-                  checked={paymentMethodName === 'PayPal'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-              </div>
-              <div className="mb-3">
-                <Form.Check
-                  type="radio"
-                  id="Stripe"
-                  label="Stripe"
-                  value="Stripe"
-                  checked={paymentMethodName === 'Stripe'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-              </div>
-            </Form>
-          </div>
+        <div className="mb-3">
+          Already have an account?{' '}
+          <Link to={`/signin?redirect=${redirect}`}>Sign-In</Link>
         </div>
-      </div>
-    </div>
+      </Form>
+    </Container>
   );
 }

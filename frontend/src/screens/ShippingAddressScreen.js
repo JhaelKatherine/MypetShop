@@ -12,137 +12,126 @@ export default function ShippingAddressScreen() {
   const {
     fullBox,
     userInfo,
-    cart: { shippingAddress, paymentMethod },
+    cart: { shippingAddress },
   } = state;
-
   const [fullName, setFullName] = useState(shippingAddress.fullName || '');
   const [address, setAddress] = useState(shippingAddress.address || '');
   const [city, setCity] = useState(shippingAddress.city || '');
-  const [postalCode, setPostalCode] = useState(shippingAddress.postalCode || '');
-  const [country, setCountry] = useState(shippingAddress.country || '');
-
-  const [paymentMethodName, setPaymentMethod] = useState(paymentMethod || 'PayPal');
-
+  const [postalCode, setPostalCode] = useState(
+    shippingAddress.postalCode || ''
+  );
   useEffect(() => {
     if (!userInfo) {
       navigate('/signin?redirect=/shipping');
     }
   }, [userInfo, navigate]);
-
-  const submitShippingHandler = (e) => {
+  const [country, setCountry] = useState(shippingAddress.country || '');
+  const submitHandler = (e) => {
     e.preventDefault();
     ctxDispatch({
       type: 'SAVE_SHIPPING_ADDRESS',
-      payload: { fullName, address, city, postalCode, country, location: shippingAddress.location },
+      payload: {
+        fullName,
+        address,
+        city,
+        postalCode,
+        country,
+        location: shippingAddress.location,
+      },
     });
-    localStorage.setItem('shippingAddress', JSON.stringify({ fullName, address, city, postalCode, country, location: shippingAddress.location }));
-  };
-
-  const submitPaymentHandler = (e) => {
-    e.preventDefault();
-    submitShippingHandler(e);
-    ctxDispatch({ type: 'SAVE_PAYMENT_METHOD', payload: paymentMethodName });
-    localStorage.setItem('paymentMethod', paymentMethodName);
-    navigate('/placeorder');
+    localStorage.setItem(
+      'shippingAddress',
+      JSON.stringify({
+        fullName,
+        address,
+        city,
+        postalCode,
+        country,
+        location: shippingAddress.location,
+      })
+    );
+    navigate('/payment');
   };
 
   useEffect(() => {
     ctxDispatch({ type: 'SET_FULLBOX_OFF' });
   }, [ctxDispatch, fullBox]);
 
-  useEffect(() => {
-    if (!shippingAddress.address) {
-      navigate('/shipping');
-    }
-  }, [shippingAddress, navigate]);
-
   return (
-    <div className="container">
+    <div>
       <Helmet>
-        <title>Shipping and Payment    MMMMMMM</title>
+        <title>Shipping Address</title>
       </Helmet>
 
       <CheckoutSteps step1 step2></CheckoutSteps>
-      <div className="row">
-        {/* Left side for ShippingAddressScreen */}
-        <div className="col-md-6">
-          <div className="small-container">
-            <h1 className="my-3">Billing Details</h1>
-            <Form onSubmit={submitPaymentHandler }>
-              <Form.Group className="mb-3" controlId="fullName">
-                <Form.Label>Full Name(*)</Form.Label>
-                <Form.Control value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-              </Form.Group>
-         <Form.Group className="mb-3" controlId="address">
-           <Form.Label>Nit(optional)</Form.Label>
-           <Form.Control
-             value={address}
-             onChange={(e) => setAddress(e.target.value)}
-             required
-           />
-           </Form.Group>
-
-
-         <Form.Group className="mb-3" controlId="address">
-           <Form.Label>Address</Form.Label>
-           <Form.Control
-             value={address}
-             onChange={(e) => setAddress(e.target.value)}
-             required
-           />
-         </Form.Group>
-         <Form.Group className="mb-3" controlId="city">
-           <Form.Label>City</Form.Label>
-           <Form.Control
-             value={city}
-             onChange={(e) => setCity(e.target.value)}
-             required
-           />
-         </Form.Group>
-         <Form.Group className="mb-3" controlId="postalCode">
-           <Form.Label>Cell Phone</Form.Label>
-           <Form.Control
-             value={postalCode}
-             onChange={(e) => setPostalCode(e.target.value)}
-             required
-           />
-         </Form.Group>
-            </Form>
+      <div className="container small-container">
+        <h1 className="my-3">Shipping Address</h1>
+        <Form onSubmit={submitHandler}>
+          <Form.Group className="mb-3" controlId="fullName">
+            <Form.Label>Full Name</Form.Label>
+            <Form.Control
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="address">
+            <Form.Label>Address</Form.Label>
+            <Form.Control
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="city">
+            <Form.Label>City</Form.Label>
+            <Form.Control
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="postalCode">
+            <Form.Label>Postal Code</Form.Label>
+            <Form.Control
+              value={postalCode}
+              onChange={(e) => setPostalCode(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="country">
+            <Form.Label>Country</Form.Label>
+            <Form.Control
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <div className="mb-3">
+            <Button
+              id="chooseOnMap"
+              type="button"
+              variant="light"
+              onClick={() => navigate('/map')}
+            >
+              Choose Location On Map
+            </Button>
+            {shippingAddress.location && shippingAddress.location.lat ? (
+              <div>
+                LAT: {shippingAddress.location.lat}
+                LNG:{shippingAddress.location.lng}
+              </div>
+            ) : (
+              <div>No location</div>
+            )}
           </div>
-        </div>
-        
-        {/* Right side for PaymentMethodScreen */}
-        <div className="col-md-6">
-          <div className="small-container">
-            <h1 className="my-3">Payment Method</h1>
-            <Form onSubmit={submitPaymentHandler}>
-              {/* Payment method radio buttons */}
-              <div className="mb-3">
-                <Form.Check
-                  type="radio"
-                  id="PayPal"
-                  label="PayPal"
-                  value="PayPal"
-                  checked={paymentMethodName === 'PayPal'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-              </div>
-              <div className="mb-3">
-                <Form.Check
-                  type="radio"
-                  id="Stripe"
-                  label="Stripe"
-                  value="Stripe"
-                  checked={paymentMethodName === 'Stripe'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-              </div>
-              <div className="mb-3">
-                <Button variant="primary" type="submit">Continue--</Button>
-              </div>
-            </Form>
+
+          <div className="mb-3">
+            <Button variant="primary" type="submit">
+              Continue
+            </Button>
           </div>
-        </div>
+        </Form>
       </div>
     </div>
   );
