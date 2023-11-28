@@ -102,24 +102,24 @@ function App() {
                     )}
                   </Link>
                   {userInfo ? (
-                   <NavDropdown title={<><img src="https://i.ibb.co/PMQ1s9X/imagen-de-perfil.png" alt="Profile" /> {userInfo.name}</>} id="basic-nav-dropdown">
-                   <LinkContainer to="/profile">
-                     <NavDropdown.Item>User Profile</NavDropdown.Item>
-                   </LinkContainer>
-                   <LinkContainer to="/orderhistory">
-                     <NavDropdown.Item>Order History</NavDropdown.Item>
-                   </LinkContainer>
-                   <NavDropdown.Divider />
-                   <Link
-                     className="dropdown-item"
-                     to="#signout"
-                     onClick={signoutHandler}
-                   >
-                     Sign Out
-                   </Link>
-                 </NavDropdown>
+                    <NavDropdown title={userInfo.name} id="basic-nav-dropdown">
+                      <LinkContainer to="/profile">
+                        <NavDropdown.Item>User Profile</NavDropdown.Item>
+                      </LinkContainer>
+                      <LinkContainer to="/orderhistory">
+                        <NavDropdown.Item>Order History</NavDropdown.Item>
+                      </LinkContainer>
+                      <NavDropdown.Divider />
+                      <Link
+                        className="dropdown-item"
+                        to="#signout"
+                        onClick={signoutHandler}
+                      >
+                        Sign Out
+                      </Link>
+                    </NavDropdown>
                   ) : (
-                    <Link className="nav-link" to="/signin">
+                    <Link className="nav-link" to="/">
                       Sign In
                     </Link>
                   )}
